@@ -44,6 +44,7 @@ public class TicketService {
 		LOGGER.info("Deleting ticket with id=" + id);
         this.ticketRespository.deleteById(id);
         boolean exists = this.ticketRespository.existsById(id);
+        System.out.println(!exists);
         return !exists;
 	}
 

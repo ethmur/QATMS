@@ -44,19 +44,19 @@ class TicketQueue extends React.Component {
                 (data) => {
                     if (data === true) {
                         alert("Successfully created ticket");
+                        this.refreshTicketQueue();
                     }
                     else {
                         alert("Failed to create ticket");
+                        this.refreshTicketQueue();
                     }
                 },
                 (error) => {
                     console.log(error);
-                    alert("Failed to create ticket")
+                    alert("Failed to create ticket");
+                    this.refreshTicketQueue();
                 }
             )
-            .then(
-                this.refreshTicketQueue()
-            );
     }
 
     handleDeleteTicket(id) {
@@ -65,19 +65,19 @@ class TicketQueue extends React.Component {
                 (data) => {
                     if (data === true) {
                         alert("Successfully deleted ticket");
+                        this.refreshTicketQueue();
                     }
                     else {
                         alert("Failed to delete ticket");
+                        this.refreshTicketQueue();
                     }
                 },
                 (error) => {
                     console.log(error);
-                    alert("Failed to delete ticket")
+                    alert("Failed to delete ticket");
+                    this.refreshTicketQueue();
                 }
             )
-            .then(
-                this.refreshTicketQueue()
-            );
     }
 
     handleUpdateTicket(ticket) {
@@ -86,19 +86,19 @@ class TicketQueue extends React.Component {
                 (data) => {
                     if (data === true) {
                         alert("Successfully updated ticket");
+                        this.refreshTicketQueue();
                     }
                     else {
                         alert("Failed to update ticket");
+                        this.refreshTicketQueue();
                     }
                 },
                 (error) => {
                     console.log(error);
-                    alert("Failed to update ticket")
+                    alert("Failed to update ticket");
+                    this.refreshTicketQueue();
                 }
             )
-            .then(
-                this.refreshTicketQueue()
-            );
     }
 
     toggleCreatingTicket() {
