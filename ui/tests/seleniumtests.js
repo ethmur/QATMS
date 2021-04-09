@@ -1,7 +1,7 @@
 const {Builder, By, Key, until} = require('selenium-webdriver');
 const assert = require('assert');
 
-const URL = 'http://localhost:3000/';
+const URL = 'http://localhost:8081/tms/ui';
 
 function sleep(n) {
 	console.log('Sleeping ', n, 'ms');
