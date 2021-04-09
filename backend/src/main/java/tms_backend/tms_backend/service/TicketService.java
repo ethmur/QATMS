@@ -33,7 +33,7 @@ public class TicketService {
 		LOGGER.info("Updating following ticket: " + ticket);
 		Optional<Ticket> existingOptional = this.ticketRespository.findById(id);
         Ticket existing = existingOptional.get();
-        existing.setTitle(ticket.getAuthor());
+        existing.setTitle(ticket.getTitle());
         existing.setDescription(ticket.getDescription());
         existing.setAuthor(ticket.getAuthor());
         existing.setStatus(ticket.getStatus());
