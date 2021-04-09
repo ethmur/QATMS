@@ -1,0 +1,23 @@
+.ticket {
+    margin-top: .5rem;
+    margin-bottom: .5rem;
+    border-style: solid;
+    border-width: thick;
+    display: inline-block;
+    width: 50%;
+}
+
+.ticket-title {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    font-size: large;
+    font-weight: bold;
+}
+
+.ticket-detail {
+    margin: 0;
+}
+
+input {
+    display: inline-block;
+}

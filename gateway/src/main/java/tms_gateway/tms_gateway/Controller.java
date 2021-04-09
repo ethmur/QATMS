@@ -1,4 +1,4 @@
-package tms_backend.tms_backend;
+package tms_gateway.tms_gateway;
 
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
