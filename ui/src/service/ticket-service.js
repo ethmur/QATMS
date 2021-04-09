@@ -1,5 +1,5 @@
 class TicketService {
-    static #backendUrl = "http://localhost:8080/"
+    static #backendUrl = "/tms/backend/"
     static statusOptions = ["Open", "In Progress", "Closed"];
 
     static getTickets() {
