@@ -1,0 +1,53 @@
+Risk Assessment
+
+	- 
+		Description: SQL injection attacks through UI
+		Evaluation: 
+			- Steal sensitive info
+			- Destroy data
+		Likelihood: Low
+		Impact: High
+		Responsibility: Me
+		Response:
+			- Inform correct people
+			- Restore using backup
+			- Identify flaw and fix it
+		Control Measures:
+			- Database Backups
+			- Sanitize inputs
+			- Role-based access control
+			
+	- 
+		Description: Stolen admin username/password
+		Evaluation:
+			- Steal sensitive info
+			- Destroy data
+		Likelihood: Low
+		Impact: High
+		Responsibility: Me
+		Response:
+			- Inform correct people
+			- Restore using backup
+			- Change password
+		Control Measures:
+			- Database Backups
+			- Role-based access control
+			- Auto-rotating keys
+			- 2FA authentication
+			
+	-
+		Description: AWS infrastructure hosting the UI/backend/database is down
+		Evaluation:
+			- Data loss
+			- Unhappy clients due to system downtime
+		Likelihood: Low
+		Impact: High
+		Responsibility: AWS partial responsibility to address infrastructure issues, my partial responsibility to create disaster recovery systems
+		Response:
+			- Inform correct people
+			- After infrastructure is back up, make sure our systems are back up
+			- Create disaster recovery systems
+		Control Measures:
+			- Disaster recovery system
+			- Automated health check dashboard
+		
