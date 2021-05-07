@@ -3,6 +3,7 @@ QA TicketManagementSystem
 This software project allows for the basic management of tickets.
 
 JIRA board link: https://ethanbarcims.atlassian.net/browse/TMS
+JIRA invite link: https://id.atlassian.com/invite/p/jira-software?id=Rvolh4s8TiOafJ8wBd_lGw
 
 Components:
 	- Database (MySQL)
