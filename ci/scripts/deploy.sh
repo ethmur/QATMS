@@ -18,7 +18,10 @@
         2) Using ansible, run the following actions:
             - On Jenkins EC2 machine:
                 - Set environment variables
-                - Install jenkins, kubectl
+                - Install the following software:
+                    - AWS CLI
+                    - Jenkins
+                    - kubectl
 '
 
 
@@ -49,6 +52,19 @@ terraform -chdir=${TERRAFORM_DIR} apply -auto-approve
 
 # Retrieve terraform output values
 printf "\nRetrieving terraform output values...\n"
+PRIVATE_KEY_FILEPATH=$(terraform -chdir=${TERRAFORM_DIR} output -raw private_key_filepath)
+EC2_JENKINS_HOSTNAME=$(terraform -chdir=${TERRAFORM_DIR} output -raw ec2_jenkins_hostname)
+printf "private_key_filepath is ${PRIVATE_KEY_FILEPATH}\n"
+printf "ec2_jenkins_hostname is ${EC2_JENKINS_HOSTNAME}\n"
+
+
+# Run ansible playbook
+printf "\nRunning ansible playbook...\n"
+ansible-playbook -v -i ${ANSIBLE_DIR}/inventory.yaml ${ANSIBLE_DIR}/playbook.yaml -e private_key_filepath=${PRIVATE_KEY_FILEPATH} -e jenkins_server_hostname=${EC2_JENKINS_HOSTNAME}
+
+
+# Print useful information for user
+printf "\nJenkins URL: http://${EC2_JENKINS_HOSTNAME}:8080\n"
 
 
 SCRIPT_END_TIME=$(date -u +%s)

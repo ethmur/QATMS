@@ -43,6 +43,7 @@ sudo apt-get install terraform -y
 
 # Install Ansible
 printf "\nInstalling ansible...\n"
+sudo apt-add-repository --yes --update ppa:ansible/ansible
 sudo apt-get install ansible -y
 
 

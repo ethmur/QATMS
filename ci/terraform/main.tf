@@ -47,9 +47,22 @@ resource "aws_security_group" "allow_inbound_ssh" {
   name   = "allow_inbound_ssh"
   vpc_id = module.vpc.vpc_id
   ingress {
-    description = "Allow inbound SSH traffic"
+    description = "Allow inbound SSH access"
     from_port   = 22
     to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+# This resource will create a security group for allowing inbound HTTP traffic on port 8080
+resource "aws_security_group" "allow_inbound_http_8080" {
+  name   = "allow_inbound_http_8080"
+  vpc_id = module.vpc.vpc_id
+  ingress {
+    description = "Allow inbound HTTP traffic on port 8080"
+    from_port   = 8080
+    to_port     = 8080
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -115,8 +128,9 @@ resource "aws_instance" "ec2_jenkins" {
     Name = "Jenkins"
   }
   vpc_security_group_ids = [
+    module.vpc.default_security_group_id,
     aws_security_group.allow_inbound_ssh.id,
-    module.vpc.default_security_group_id
+    aws_security_group.allow_inbound_http_8080.id
   ]
 }
 
@@ -131,6 +145,6 @@ output "private_key_filepath" {
 }
 
 # This is the public DNS name of the EC2 instance
-output "ec2_hostname" {
+output "ec2_jenkins_hostname" {
   value = aws_instance.ec2_jenkins.public_dns
 }

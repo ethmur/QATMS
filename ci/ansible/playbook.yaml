@@ -1,0 +1,109 @@
+- name: Set environment variables
+  hosts: all
+  become: false
+  tasks:
+    - name: "Set DB_USERNAME environment variable on {{ inventory_hostname }}"
+      lineinfile: 
+        dest: ~/.bashrc 
+        line: export DB_USERNAME=TODO
+        insertafter: EOF 
+        regexp: 'export DB_USERNAME' 
+        state: present
+ 
+
+- name: Install AWS CLI
+  hosts: all
+  become: true
+  tasks:
+    - name: "Install AWS CLI on {{ inventory_hostname }}"
+      apt:
+        name: awscli
+        state: latest
+        update_cache: yes
+    - name: "Show AWS CLI version on {{ inventory_hostname }}"
+      shell: 
+        cmd: aws --version
+      changed_when: false
+    - name: "Verify AWS CLI credentials on {{ inventory_hostname }}"
+      shell:
+        cmd: aws sts get-caller-identity
+      changed_when: false
+
+
+- name: Install kubectl
+  hosts: all
+  become: true
+  tasks:
+    - name: "Install kubectl dependencies on {{ inventory_hostname }}"
+      apt:
+        name: [apt-transport-https, ca-certificates, curl]
+        state: latest
+        update_cache: yes
+    - name: "Import Google Cloud public signing key on {{ inventory_hostname }}"
+      get_url:
+        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+        dest: /usr/share/keyrings/kubernetes-archive-keyring.gpg
+    - name: "Add Kubernetes apt repository on {{ inventory_hostname }}"
+      copy:
+        content: deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main
+        dest: /etc/apt/sources.list.d/kubernetes.list
+    - name: "Install kubectl on {{ inventory_hostname }}"
+      apt:
+        name: kubectl
+        state: latest
+        update_cache: yes
+    - name: "Show kubectl version on {{ inventory_hostname }}"
+      shell:
+        cmd: kubectl version --client
+      changed_when: false
+
+
+- name: Install Java8
+  hosts: all
+  become: true
+  tasks:
+    - name: "Install Java on {{ inventory_hostname }}"
+      apt:
+        name: openjdk-8-jdk
+        state: latest
+        update_cache: yes
+    - name: "Show Java version on {{ inventory_hostname }}"
+      shell:
+        cmd: java -version
+      changed_when: false
+
+
+- name: Install & Run Jenkins
+  hosts: all
+  become: true
+  tasks:
+    - name: "Import Jenkins public signing key on {{ inventory_hostname }}"
+      apt_key:
+        url: https://pkg.jenkins.io/debian-stable/jenkins.io.key
+        state: present
+    - name: "Add Jenkins apt repository on {{ inventory_hostname }}"
+      copy:
+        content: deb https://pkg.jenkins.io/debian-stable binary/
+        dest: /etc/apt/sources.list.d/jenkins.list
+    - name: "Install Jenkins on {{ inventory_hostname }}"
+      apt:
+        name: jenkins
+        state: latest
+        update_cache: yes
+    - name: "Restart Jenkins service on {{ inventory_hostname }}"
+      systemd:
+        name: jenkins
+        state: restarted
+        enabled: true
+    - name: "Sleep until Jenkins password file is present on {{ inventory_hostname }}"
+      wait_for:
+        path: /var/lib/jenkins/secrets/initialAdminPassword
+        timeout: 120
+    - name: "Get Jenkins admin password on {{ inventory_hostname }}"
+      shell:
+        cmd: cat /var/lib/jenkins/secrets/initialAdminPassword
+      changed_when: false
+      register: shell_get_jenkins_password
+    - name: "Print Jenkins admin password on {{ inventory_hostname }}"
+      debug:
+        var: shell_get_jenkins_password.stdout
