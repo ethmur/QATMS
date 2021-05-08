@@ -20,8 +20,10 @@
                 - Set environment variables
                 - Install the following software:
                     - AWS CLI
+                    - Java
                     - Jenkins
                     - kubectl
+                - Configure kubectl
 '
 
 
@@ -50,17 +52,33 @@ terraform -chdir=${TERRAFORM_DIR} init
 terraform -chdir=${TERRAFORM_DIR} apply -auto-approve
 
 
-# Retrieve terraform output values
+# Retrieve terraform output values and other variables
 printf "\nRetrieving terraform output values...\n"
+AWS_REGION=$(aws configure get region)
 PRIVATE_KEY_FILEPATH=$(terraform -chdir=${TERRAFORM_DIR} output -raw private_key_filepath)
 EC2_JENKINS_HOSTNAME=$(terraform -chdir=${TERRAFORM_DIR} output -raw ec2_jenkins_hostname)
+RDS_ENDPOINT=$(terraform -chdir=${TERRAFORM_DIR} output -raw rds_endpoint)
+RDS_USERNAME=$(terraform -chdir=${TERRAFORM_DIR} output -raw rds_username)
+RDS_PASSWORD=$(terraform -chdir=${TERRAFORM_DIR} output -raw rds_password)
+EKS_CLUSTER_NAME=$(terraform -chdir=${TERRAFORM_DIR} output -raw eks_cluster_name)
+printf "AWS region is ${AWS_REGION}\n"
 printf "private_key_filepath is ${PRIVATE_KEY_FILEPATH}\n"
 printf "ec2_jenkins_hostname is ${EC2_JENKINS_HOSTNAME}\n"
+printf "rds_endpoint is ${RDS_ENDPOINT}\n"
+printf "rds_username is ${RDS_USERNAME}\n"
+printf "eks_cluster_name is ${EKS_CLUSTER_NAME}\n"
 
 
 # Run ansible playbook
 printf "\nRunning ansible playbook...\n"
-ansible-playbook -v -i ${ANSIBLE_DIR}/inventory.yaml ${ANSIBLE_DIR}/playbook.yaml -e private_key_filepath=${PRIVATE_KEY_FILEPATH} -e jenkins_server_hostname=${EC2_JENKINS_HOSTNAME}
+ansible-playbook -v -i ${ANSIBLE_DIR}/inventory.yaml ${ANSIBLE_DIR}/playbook.yaml \
+	-e aws_region=${AWS_REGION} \
+	-e private_key_filepath=${PRIVATE_KEY_FILEPATH} \
+	-e jenkins_server_hostname=${EC2_JENKINS_HOSTNAME} \
+	-e db_endpoint=${RDS_ENDPOINT} \
+        -e db_username=${RDS_USERNAME} \
+        -e db_password=${RDS_PASSWORD} \
+	-e eks_cluster_name=${EKS_CLUSTER_NAME}
 
 
 # Print useful information for user

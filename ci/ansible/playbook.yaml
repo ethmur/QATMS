@@ -2,12 +2,26 @@
   hosts: all
   become: false
   tasks:
+    - name: "Set DB_ENDPOINT environment variable on {{ inventory_hostname }}"
+      lineinfile:
+        dest: ~/.bashrc
+        line: "export DB_ENDPOINT={{ db_endpoint }}"
+        insertafter: EOF
+        regexp: 'export DB_ENDPOINT'
+        state: present
     - name: "Set DB_USERNAME environment variable on {{ inventory_hostname }}"
       lineinfile: 
         dest: ~/.bashrc 
-        line: export DB_USERNAME=TODO
+        line: "export DB_USERNAME={{ db_username }}"
         insertafter: EOF 
         regexp: 'export DB_USERNAME' 
+        state: present
+    - name: "Set DB_PASSWORD environment variable on {{ inventory_hostname }}"
+      lineinfile:
+        dest: ~/.bashrc
+        line: "export DB_PASSWORD={{ db_password }}"
+        insertafter: EOF
+        regexp: 'export DB_PASSWORD'
         state: present
  
 
@@ -30,7 +44,7 @@
       changed_when: false
 
 
-- name: Install kubectl
+- name: Install & Configure kubectl
   hosts: all
   become: true
   tasks:
@@ -56,6 +70,11 @@
       shell:
         cmd: kubectl version --client
       changed_when: false
+    - name: "Configure kubectl on {{ inventory_hostname }}"
+      shell:
+        cmd: "aws eks --region {{ aws_region }} update-kubeconfig --name {{ eks_cluster_name }}"
+      vars:
+        ansible_become: false
 
 
 - name: Install Java8
