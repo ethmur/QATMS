@@ -16,7 +16,7 @@ module "eks" {
   node_groups = [
     {
       name             = "eks_group"
-      instance_type    = "t3.micro"
+      instance_type    = "t3.medium"
       desired_capacity = 2
       min_capacity     = 2
       max_capacity     = 3

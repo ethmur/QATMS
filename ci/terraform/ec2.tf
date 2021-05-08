@@ -27,7 +27,7 @@ resource "aws_iam_instance_profile" "ec2_profile" {
 resource "aws_instance" "ec2_jenkins" {
   ami                  = "ami-0943382e114f188e8"
   iam_instance_profile = aws_iam_instance_profile.ec2_profile.name
-  instance_type        = "t2.micro"
+  instance_type        = "t2.medium"
   key_name             = aws_key_pair.tms.key_name
   subnet_id            = module.vpc.public_subnets[0]
   vpc_security_group_ids = [
