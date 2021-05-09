@@ -39,7 +39,6 @@ pipeline{
             steps {
                 dir('gateway/') {
                     sh """
-                        set +x
                         sed 's!{{UI_BASE_URL}}!http://ui!g;s!{{BACKEND_BASE_URL}}!http://backend!g;' kubefile.yaml | kubectl delete -f - --ignore-not-found=true
                         sed 's!{{UI_BASE_URL}}!http://ui!g;s!{{BACKEND_BASE_URL}}!http://backend!g;' kubefile.yaml | kubectl apply -f -
                     """
