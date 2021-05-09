@@ -44,6 +44,34 @@
       changed_when: false
 
 
+- name: Install Docker
+  hosts: all
+  become: true
+  tasks:
+    - name: "Install Docker dependencies on {{ inventory_hostname }}"
+      apt:
+        name: [ apt-transport-https, ca-certificates, curl, software-properties-common ]
+        state: latest
+        update_cache: yes
+    - name: "Import Docker public signing key on {{ inventory_hostname }}"
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+    - name: "Add Docker apt repository on {{ inventory_hostname }}"
+      apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu bionic stable
+        state: present
+    - name: "Install Docker on {{ inventory_hostname }}"
+      apt: 
+        name: docker-ce
+        update_cache: yes
+        state: latest
+    - name: "Show Docker version on {{ inventory_hostname }}"
+      shell:
+        cmd: docker --version
+      changed_when: false
+
+
 - name: Install & Configure kubectl
   hosts: all
   become: true
@@ -157,6 +185,11 @@
         cmd: cat /var/lib/jenkins/secrets/initialAdminPassword
       changed_when: false
       register: shell_get_jenkins_password
+    - name: "Add jenkins user to the docker group on {{ inventory_hostname }}"
+      user:
+        name: jenkins
+        groups: docker
+        append: yes
     - name: "Install Jenkins plugins on {{ inventory_hostname }}"
       community.general.jenkins_plugin:
         name: "{{ item }}"
@@ -172,6 +205,14 @@
       pip:
         name: python-jenkins
         executable: pip3
+    - name: "Restart Jenkins service on {{ inventory_hostname }}"
+      systemd:
+        name: jenkins
+        state: restarted
+        enabled: true
+    - name: "Sleep until Jenkins service has started on {{ inventory_hostname }}"
+      pause:
+        seconds: 20
     - name: "Create Jenkins jobs on {{ inventory_hostname }}"
       community.general.jenkins_job:
         config: "{{ lookup('file', 'jenkins_jobs/' + item + '.xml') }}"
@@ -180,11 +221,6 @@
         user: admin
       loop:
         - backend
-    - name: "Restart Jenkins service on {{ inventory_hostname }}"
-      systemd:
-        name: jenkins
-        state: restarted
-        enabled: true
     - name: "Configure kubectl for jenkins user on {{ inventory_hostname }}"
       shell:
         cmd: "aws eks --region {{ aws_region }} update-kubeconfig --name {{ eks_cluster_name }}"

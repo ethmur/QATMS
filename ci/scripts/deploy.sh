@@ -24,11 +24,12 @@
                     - Maven
                     - Pip
                     - Jenkins
+                    - Docker
                     - kubectl
                 - Configure kubectl
                 - Start Jenkins service
                 - Install Jenkins plugins
-                - Create Jenkins jobs
+                - Add Jenkins jobs
 '
 
 
