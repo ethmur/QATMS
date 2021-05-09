@@ -5,6 +5,7 @@
         - AWS CLI
         - Terraform
         - Ansible
+	- kubectl
 
     Author: Ethan Murad
 
@@ -26,7 +27,7 @@ sudo apt-get update
 
 # Install standard packages
 printf "\nInstalling standard packages...\n"
-sudo apt-get install gnupg software-properties-common curl zip unzip -y
+sudo apt-get install gnupg software-properties-common apt-transport-https ca-certificates curl zip unzip -y
 
 
 # Install AWS CLI
@@ -47,6 +48,13 @@ sudo apt-add-repository --yes --update ppa:ansible/ansible
 sudo apt-get install ansible -y
 # Install Ansible Jenkins plugin
 sudo ansible-galaxy collection install community.general
+
+
+# Install kubectl
+printf "\nInstalling kubectl...\n"
+sudo curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
+echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+sudo apt-get install kubectl -y
 
 
 SCRIPT_END_TIME=$(date -u +%s)

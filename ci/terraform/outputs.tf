@@ -28,3 +28,8 @@ output "rds_password" {
 output "eks_cluster_name" {
   value = module.eks.cluster_id
 }
+
+# This is the filepath of the EKS kubeconfig
+output "eks_kubeconfig_relative_filepath" {
+  value = module.eks.kubeconfig_filename
+}

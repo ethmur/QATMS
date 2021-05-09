@@ -31,7 +31,7 @@ module "eks" {
   worker_additional_security_group_ids = [
     aws_security_group.allow_inbound_ssh.id
   ]
-  write_kubeconfig = false
+  write_kubeconfig = true
 }
 
 # Declaring the kubernetes provider is required, otherwise terraform will throw an error when it tries to create/update the eks cluster config map
