@@ -1,15 +1,7 @@
 <?xml version='1.1' encoding='UTF-8'?>
 <flow-definition plugin="workflow-job@2.40">
-  <actions>
-    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobAction plugin="pipeline-model-definition@1.8.4"/>
-    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction plugin="pipeline-model-definition@1.8.4">
-      <jobProperties/>
-      <triggers/>
-      <parameters/>
-      <options/>
-    </org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction>
-  </actions>
-  <description>Build &amp; Deploy the Backend</description>
+  <actions/>
+  <description>Build &amp; Deploy the UI</description>
   <keepDependencies>false</keepDependencies>
   <properties/>
   <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2.90">
@@ -21,30 +13,26 @@
                 git &apos;https://github.com/ethmur/QATMS&apos;
             }
         }
-        stage(&apos;Maven Test&apos;) {
+        stage(&apos;npm Install Dependencies&apos;) {
             steps {
-                dir(&apos;backend/&apos;) {
-                    withMaven {
-                        sh &apos;mvn clean test&apos;
-                    }
+                dir(&apos;ui/&apos;) {
+                    sh &apos;npm install&apos;
                 }
             }
         }
-        stage(&apos;Maven Build&apos;) {
+        stage(&apos;npm Build&apos;) {
             steps {
-                dir(&apos;backend/&apos;) {
-                    withMaven {
-                        sh &apos;mvn clean package -Dmaven.test.skip=true&apos;
-                    }
+                dir(&apos;ui/&apos;) {
+                    sh &apos;npm run build&apos;
                 }
             }
         }
         stage(&apos;Build Docker Image&apos;) {
             steps {
-                dir(&apos;backend/&apos;) {
+                dir(&apos;ui/&apos;) {
                     withCredentials([usernamePassword(credentialsId: &apos;dockerhub&apos;, usernameVariable: &apos;username&apos;, passwordVariable: &apos;password&apos;)]) {
                         script {
-                            image = docker.build(&quot;${username}/tms_backend&quot;)
+                            image = docker.build(&quot;${username}/tms_ui&quot;)
                         }
                     }
                 }
@@ -61,11 +49,10 @@
         }
         stage(&apos;Deploy Kubernetes Container&apos;) {
             steps {
-                dir(&apos;backend/&apos;) {
+                dir(&apos;ui/&apos;) {
                     sh &quot;&quot;&quot;
-                        set +x
-                        sed &apos;s/{{DB_ENDPOINT}}/&apos;${DB_ENDPOINT}&apos;/g;s/{{DB_USERNAME}}/&apos;${DB_USERNAME}&apos;/g;s/{{DB_PASSWORD}}/&apos;${DB_PASSWORD}&apos;/g;&apos; kubefile.yaml | kubectl delete -f - --ignore-not-found=true
-                        sed &apos;s/{{DB_ENDPOINT}}/&apos;${DB_ENDPOINT}&apos;/g;s/{{DB_USERNAME}}/&apos;${DB_USERNAME}&apos;/g;s/{{DB_PASSWORD}}/&apos;${DB_PASSWORD}&apos;/g;&apos; kubefile.yaml | kubectl apply -f -
+                        kubectl delete -f kubefile.yaml --ignore-not-found=true
+                        kubectl apply -f kubefile.yaml
                     &quot;&quot;&quot;
                 }
             }
