@@ -150,6 +150,33 @@
       changed_when: false
 
 
+- name: Install nodeJS
+  hosts: all
+  become: true
+  tasks:
+    - name: "Import node public signing key on {{ inventory_hostname }}"
+      apt_key:
+        url: https://deb.nodesource.com/gpgkey/nodesource.gpg.key
+        state: present
+    - name: "Add nodeJS v13 apt repository on {{ inventory_hostname }}"
+      apt_repository:
+        repo: deb https://deb.nodesource.com/node_13.x bionic main
+        update_cache: yes
+    - name: "Install nodeJS on {{ inventory_hostname }}"
+      apt:
+        name: nodejs
+        state: latest
+        update_cache: yes
+    - name: "Show nodeJS version on {{ inventory_hostname }}"
+      shell:
+        cmd: node --version
+      changed_when: false
+    - name: "Show npm version on {{ inventory_hostname }}"
+      shell:
+        cmd: npm --version
+      changed_when: false
+
+
 - name: Install Run & Configure Jenkins
   hosts: all
   become: true
@@ -221,6 +248,7 @@
         user: admin
       loop:
         - backend
+        - gateway
     - name: "Configure kubectl for jenkins user on {{ inventory_hostname }}"
       shell:
         cmd: "aws eks --region {{ aws_region }} update-kubeconfig --name {{ eks_cluster_name }}"

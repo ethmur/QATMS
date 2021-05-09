@@ -26,6 +26,7 @@
                     - Jenkins
                     - Docker
                     - kubectl
+                    - nodeJS
                 - Configure kubectl
                 - Start Jenkins service
                 - Install Jenkins plugins
