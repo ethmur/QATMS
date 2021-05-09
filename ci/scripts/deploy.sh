@@ -21,9 +21,15 @@
                 - Install the following software:
                     - AWS CLI
                     - Java
+                    - Maven
+                    - Pip
                     - Jenkins
+                    - Docker
                     - kubectl
                 - Configure kubectl
+                - Start Jenkins service
+                - Install Jenkins plugins
+                - Add Jenkins jobs
 '
 
 
