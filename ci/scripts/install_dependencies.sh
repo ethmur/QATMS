@@ -45,6 +45,8 @@ sudo apt-get install terraform -y
 printf "\nInstalling ansible...\n"
 sudo apt-add-repository --yes --update ppa:ansible/ansible
 sudo apt-get install ansible -y
+# Install Ansible Jenkins plugin
+sudo ansible-galaxy collection install community.general
 
 
 SCRIPT_END_TIME=$(date -u +%s)

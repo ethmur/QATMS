@@ -1,25 +1,25 @@
 - name: Set environment variables
   hosts: all
-  become: false
+  become: true
   tasks:
     - name: "Set DB_ENDPOINT environment variable on {{ inventory_hostname }}"
       lineinfile:
-        dest: ~/.bashrc
-        line: "export DB_ENDPOINT={{ db_endpoint }}"
+        dest: /etc/environment
+        line: "DB_ENDPOINT={{ db_endpoint }}"
         insertafter: EOF
         regexp: 'export DB_ENDPOINT'
         state: present
     - name: "Set DB_USERNAME environment variable on {{ inventory_hostname }}"
       lineinfile: 
-        dest: ~/.bashrc 
-        line: "export DB_USERNAME={{ db_username }}"
+        dest: /etc/environment
+        line: "DB_USERNAME={{ db_username }}"
         insertafter: EOF 
         regexp: 'export DB_USERNAME' 
         state: present
     - name: "Set DB_PASSWORD environment variable on {{ inventory_hostname }}"
       lineinfile:
-        dest: ~/.bashrc
-        line: "export DB_PASSWORD={{ db_password }}"
+        dest: /etc/environment
+        line: "DB_PASSWORD={{ db_password }}"
         insertafter: EOF
         regexp: 'export DB_PASSWORD'
         state: present
@@ -92,7 +92,22 @@
       changed_when: false
 
 
-- name: Install & Run Jenkins
+- name: Install Maven
+  hosts: all
+  become: true
+  tasks:
+    - name: "Install Maven on {{ inventory_hostname }}"
+      apt:
+        name: maven
+        state: latest
+        update_cache: yes
+    - name: "Show Maven version on {{ inventory_hostname }}"
+      shell:
+        cmd: mvn -version
+      changed_when: false
+
+
+- name: Install Run & Configure Jenkins
   hosts: all
   become: true
   tasks:
@@ -109,20 +124,37 @@
         name: jenkins
         state: latest
         update_cache: yes
+    - name: "Disable Jenkins startup wizard on {{ ineventory_hostname }}"
+      lineinfile:
+        dest=/etc/default/jenkins
+        regexp='^JENKINS_JAVA_OPTIONS='
+        line='JENKINS_JAVA_OPTIONS="-Djenkins.install.runSetupWizard=false"'
     - name: "Restart Jenkins service on {{ inventory_hostname }}"
       systemd:
         name: jenkins
         state: restarted
         enabled: true
-    - name: "Sleep until Jenkins password file is present on {{ inventory_hostname }}"
-      wait_for:
-        path: /var/lib/jenkins/secrets/initialAdminPassword
-        timeout: 120
+    - name: "Sleep until Jenkins service has started on {{ inventory_hostname }}"
+      pause:
+        seconds: 30
     - name: "Get Jenkins admin password on {{ inventory_hostname }}"
       shell:
         cmd: cat /var/lib/jenkins/secrets/initialAdminPassword
       changed_when: false
       register: shell_get_jenkins_password
+    - name: "Install Jenkins plugins on {{ inventory_hostname }}"
+      community.general.jenkins_plugin:
+        name: "{{ item }}"
+        url_password: "{{ shell_get_jenkins_password.stdout }}"
+        url_username: admin
+      loop:
+        - maven-plugin
+    - name: "Restart Jenkins service on {{ inventory_hostname }}"
+      systemd:
+        name: jenkins
+        state: restarted
+        enabled: true
     - name: "Print Jenkins admin password on {{ inventory_hostname }}"
       debug:
         var: shell_get_jenkins_password.stdout
+
