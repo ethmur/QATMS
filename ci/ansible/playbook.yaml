@@ -249,6 +249,7 @@
       loop:
         - backend
         - gateway
+        - ui
     - name: "Configure kubectl for jenkins user on {{ inventory_hostname }}"
       shell:
         cmd: "aws eks --region {{ aws_region }} update-kubeconfig --name {{ eks_cluster_name }}"

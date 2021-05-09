@@ -44,7 +44,7 @@
                 dir(&apos;backend/&apos;) {
                     withCredentials([usernamePassword(credentialsId: &apos;dockerhub&apos;, usernameVariable: &apos;username&apos;, passwordVariable: &apos;password&apos;)]) {
                         script {
-                            image = docker.build(&quot;ethmur/tms_backend&quot;)
+                            image = docker.build(&quot;${username}/tms_backend&quot;)
                         }
                     }
                 }
@@ -68,6 +68,12 @@
                         sed &apos;s/{{DB_ENDPOINT}}/&apos;${DB_ENDPOINT}&apos;/g;s/{{DB_USERNAME}}/&apos;${DB_USERNAME}&apos;/g;s/{{DB_PASSWORD}}/&apos;${DB_PASSWORD}&apos;/g;&apos; kubefile.yaml | kubectl apply -f -
                     &quot;&quot;&quot;
                 }
+            }
+        }
+        stage(&apos;Show Kubernetes Services&apos;) {
+            steps {
+                sh &apos;sleep 20&apos;
+                sh &apos;kubectl get services&apos;
             }
         }
     }

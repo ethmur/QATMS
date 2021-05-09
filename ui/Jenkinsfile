@@ -1,0 +1,60 @@
+pipeline{
+    agent any
+    stages{
+        stage('Clone Git Repository') {
+            steps {
+                checkout scm
+            }
+        }
+        stage('npm Install Dependencies') {
+            steps {
+                dir('ui/') {
+                    sh 'npm install'
+                }
+            }
+        }
+        stage('npm Build') {
+            steps {
+                dir('ui/') {
+                    sh 'npm run build'
+                }
+            }
+        }
+        stage('Build Docker Image') {
+            steps {
+                dir('ui/') {
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'username', passwordVariable: 'password')]) {
+                        script {
+                            image = docker.build("${username}/tms_ui")
+                        }
+                    }
+                }
+            }
+        }
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    docker.withRegistry('https://registry.hub.docker.com', 'dockerhub') {
+                        image.push()
+                    }
+                }
+            }
+        }
+        stage('Deploy Kubernetes Container') {
+            steps {
+                dir('ui/') {
+                    sh """
+                        kubectl delete -f kubefile.yaml --ignore-not-found=true
+                        kubectl apply -f kubefile.yaml
+                    """
+                }
+            }
+        }
+        stage('Show Kubernetes Services') {
+            steps {
+                sh 'sleep 20'
+                sh 'kubectl get services'
+            }
+        }
+    }
+}
