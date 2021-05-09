@@ -1,0 +1,56 @@
+pipeline{
+    agent any
+    stages{
+        stage('Clone Git Repository') {
+            steps {
+                scm checkout
+            }
+        }
+        stage('Maven Build') {
+            steps {
+                dir('gateway/') {
+                    withMaven {
+                        sh 'mvn clean package -Dmaven.test.skip=true'
+                    }
+                }
+            }
+        }
+        stage('Build Docker Image') {
+            steps {
+                dir('gateway/') {
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'username', passwordVariable: 'password')]) {
+                        script {
+                            image = docker.build("${username}/tms_gateway")
+                        }
+                    }
+                }
+            }
+        }
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    docker.withRegistry('https://registry.hub.docker.com', 'dockerhub') {
+                        image.push()
+                    }
+                }
+            }
+        }
+        stage('Deploy Kubernetes Container') {
+            steps {
+                dir('gateway/') {
+                    sh """
+                        set +x
+                        sed 's!{{UI_BASE_URL}}!http://ui!g;s!{{BACKEND_BASE_URL}}!http://backend!g;' kubefile.yaml | kubectl delete -f - --ignore-not-found=true
+                        sed 's!{{UI_BASE_URL}}!http://ui!g;s!{{BACKEND_BASE_URL}}!http://backend!g;' kubefile.yaml | kubectl apply -f -
+                    """
+                }
+            }
+        }
+        stage('Show Kubernetes Services') {
+            steps {
+                sh 'sleep 20'
+                sh 'kubectl get services'
+            }
+        }
+    }
+}
