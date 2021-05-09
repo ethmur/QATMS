@@ -1,0 +1,160 @@
+- name: Set environment variables
+  hosts: all
+  become: true
+  tasks:
+    - name: "Set DB_ENDPOINT environment variable on {{ inventory_hostname }}"
+      lineinfile:
+        dest: /etc/environment
+        line: "DB_ENDPOINT={{ db_endpoint }}"
+        insertafter: EOF
+        regexp: 'export DB_ENDPOINT'
+        state: present
+    - name: "Set DB_USERNAME environment variable on {{ inventory_hostname }}"
+      lineinfile: 
+        dest: /etc/environment
+        line: "DB_USERNAME={{ db_username }}"
+        insertafter: EOF 
+        regexp: 'export DB_USERNAME' 
+        state: present
+    - name: "Set DB_PASSWORD environment variable on {{ inventory_hostname }}"
+      lineinfile:
+        dest: /etc/environment
+        line: "DB_PASSWORD={{ db_password }}"
+        insertafter: EOF
+        regexp: 'export DB_PASSWORD'
+        state: present
+ 
+
+- name: Install AWS CLI
+  hosts: all
+  become: true
+  tasks:
+    - name: "Install AWS CLI on {{ inventory_hostname }}"
+      apt:
+        name: awscli
+        state: latest
+        update_cache: yes
+    - name: "Show AWS CLI version on {{ inventory_hostname }}"
+      shell: 
+        cmd: aws --version
+      changed_when: false
+    - name: "Verify AWS CLI credentials on {{ inventory_hostname }}"
+      shell:
+        cmd: aws sts get-caller-identity
+      changed_when: false
+
+
+- name: Install & Configure kubectl
+  hosts: all
+  become: true
+  tasks:
+    - name: "Install kubectl dependencies on {{ inventory_hostname }}"
+      apt:
+        name: [apt-transport-https, ca-certificates, curl]
+        state: latest
+        update_cache: yes
+    - name: "Import Google Cloud public signing key on {{ inventory_hostname }}"
+      get_url:
+        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+        dest: /usr/share/keyrings/kubernetes-archive-keyring.gpg
+    - name: "Add Kubernetes apt repository on {{ inventory_hostname }}"
+      copy:
+        content: deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main
+        dest: /etc/apt/sources.list.d/kubernetes.list
+    - name: "Install kubectl on {{ inventory_hostname }}"
+      apt:
+        name: kubectl
+        state: latest
+        update_cache: yes
+    - name: "Show kubectl version on {{ inventory_hostname }}"
+      shell:
+        cmd: kubectl version --client
+      changed_when: false
+    - name: "Configure kubectl on {{ inventory_hostname }}"
+      shell:
+        cmd: "aws eks --region {{ aws_region }} update-kubeconfig --name {{ eks_cluster_name }}"
+      vars:
+        ansible_become: false
+
+
+- name: Install Java8
+  hosts: all
+  become: true
+  tasks:
+    - name: "Install Java on {{ inventory_hostname }}"
+      apt:
+        name: openjdk-8-jdk
+        state: latest
+        update_cache: yes
+    - name: "Show Java version on {{ inventory_hostname }}"
+      shell:
+        cmd: java -version
+      changed_when: false
+
+
+- name: Install Maven
+  hosts: all
+  become: true
+  tasks:
+    - name: "Install Maven on {{ inventory_hostname }}"
+      apt:
+        name: maven
+        state: latest
+        update_cache: yes
+    - name: "Show Maven version on {{ inventory_hostname }}"
+      shell:
+        cmd: mvn -version
+      changed_when: false
+
+
+- name: Install Run & Configure Jenkins
+  hosts: all
+  become: true
+  tasks:
+    - name: "Import Jenkins public signing key on {{ inventory_hostname }}"
+      apt_key:
+        url: https://pkg.jenkins.io/debian-stable/jenkins.io.key
+        state: present
+    - name: "Add Jenkins apt repository on {{ inventory_hostname }}"
+      copy:
+        content: deb https://pkg.jenkins.io/debian-stable binary/
+        dest: /etc/apt/sources.list.d/jenkins.list
+    - name: "Install Jenkins on {{ inventory_hostname }}"
+      apt:
+        name: jenkins
+        state: latest
+        update_cache: yes
+    - name: "Disable Jenkins startup wizard on {{ ineventory_hostname }}"
+      lineinfile:
+        dest=/etc/default/jenkins
+        regexp='^JENKINS_JAVA_OPTIONS='
+        line='JENKINS_JAVA_OPTIONS="-Djenkins.install.runSetupWizard=false"'
+    - name: "Restart Jenkins service on {{ inventory_hostname }}"
+      systemd:
+        name: jenkins
+        state: restarted
+        enabled: true
+    - name: "Sleep until Jenkins service has started on {{ inventory_hostname }}"
+      pause:
+        seconds: 30
+    - name: "Get Jenkins admin password on {{ inventory_hostname }}"
+      shell:
+        cmd: cat /var/lib/jenkins/secrets/initialAdminPassword
+      changed_when: false
+      register: shell_get_jenkins_password
+    - name: "Install Jenkins plugins on {{ inventory_hostname }}"
+      community.general.jenkins_plugin:
+        name: "{{ item }}"
+        url_password: "{{ shell_get_jenkins_password.stdout }}"
+        url_username: admin
+      loop:
+        - maven-plugin
+    - name: "Restart Jenkins service on {{ inventory_hostname }}"
+      systemd:
+        name: jenkins
+        state: restarted
+        enabled: true
+    - name: "Print Jenkins admin password on {{ inventory_hostname }}"
+      debug:
+        var: shell_get_jenkins_password.stdout
+
