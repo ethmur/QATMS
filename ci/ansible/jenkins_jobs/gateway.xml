@@ -12,64 +12,25 @@
   <description>Build &amp; Deploy the Gateway</description>
   <keepDependencies>false</keepDependencies>
   <properties/>
-  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2.90">
-    <script>pipeline{
-    agent any
-    stages{
-        stage(&apos;Clone Git Repository&apos;) {
-            steps {
-                git &apos;https://github.com/ethmur/QATMS&apos;
-            }
-        }
-        stage(&apos;Maven Build&apos;) {
-            steps {
-                dir(&apos;gateway/&apos;) {
-                    withMaven {
-                        sh &apos;mvn clean package -Dmaven.test.skip=true&apos;
-                    }
-                }
-            }
-        }
-        stage(&apos;Build Docker Image&apos;) {
-            steps {
-                dir(&apos;gateway/&apos;) {
-                    withCredentials([usernamePassword(credentialsId: &apos;dockerhub&apos;, usernameVariable: &apos;username&apos;, passwordVariable: &apos;password&apos;)]) {
-                        script {
-                            image = docker.build(&quot;${username}/tms_gateway&quot;)
-                        }
-                    }
-                }
-            }
-        }
-        stage(&apos;Push Docker Image&apos;) {
-            steps {
-                script {
-                    docker.withRegistry(&apos;https://registry.hub.docker.com&apos;, &apos;dockerhub&apos;) {
-                        image.push()
-                    }
-                }
-            }
-        }
-        stage(&apos;Deploy Kubernetes Container&apos;) {
-            steps {
-                dir(&apos;gateway/&apos;) {
-                    sh &quot;&quot;&quot;
-                        set +x
-                        sed &apos;s!{{UI_BASE_URL}}!http://ui!g;s!{{BACKEND_BASE_URL}}!http://backend!g;&apos; kubefile.yaml | kubectl delete -f - --ignore-not-found=true
-                        sed &apos;s!{{UI_BASE_URL}}!http://ui!g;s!{{BACKEND_BASE_URL}}!http://backend!g;&apos; kubefile.yaml | kubectl apply -f -
-                    &quot;&quot;&quot;
-                }
-            }
-        }
-        stage(&apos;Show Kubernetes Services&apos;) {
-            steps {
-                sh &apos;sleep 20&apos;
-                sh &apos;kubectl get services&apos;
-            }
-        }
-    }
-}</script>
-    <sandbox>true</sandbox>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition" plugin="workflow-cps@2.90">
+    <scm class="hudson.plugins.git.GitSCM" plugin="git@4.7.1">
+      <configVersion>2</configVersion>
+      <userRemoteConfigs>
+        <hudson.plugins.git.UserRemoteConfig>
+          <url>https://github.com/ethmur/QATMS</url>
+        </hudson.plugins.git.UserRemoteConfig>
+      </userRemoteConfigs>
+      <branches>
+        <hudson.plugins.git.BranchSpec>
+          <name>*/master</name>
+        </hudson.plugins.git.BranchSpec>
+      </branches>
+      <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+      <submoduleCfg class="empty-list"/>
+      <extensions/>
+    </scm>
+    <scriptPath>gateway/Jenkinsfile</scriptPath>
+    <lightweight>true</lightweight>
   </definition>
   <triggers/>
   <disabled>false</disabled>
