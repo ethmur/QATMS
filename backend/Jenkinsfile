@@ -49,8 +49,7 @@ pipeline{
                 dir('backend/') {
                     sh """
                         set +x
-                        sed 's/{{DB_ENDPOINT}}/'${DB_ENDPOINT}'/g;s/{{DB_USERNAME}}/'${DB_USERNAME}'/g;s/{{DB_PASSWORD}}/'${DB_PASSWORD}'/g;' kubefile.yaml | kubectl delete -f - 
---ignore-not-found=true
+                        sed 's/{{DB_ENDPOINT}}/'${DB_ENDPOINT}'/g;s/{{DB_USERNAME}}/'${DB_USERNAME}'/g;s/{{DB_PASSWORD}}/'${DB_PASSWORD}'/g;' kubefile.yaml | kubectl delete -f - --ignore-not-found=true
                         sed 's/{{DB_ENDPOINT}}/'${DB_ENDPOINT}'/g;s/{{DB_USERNAME}}/'${DB_USERNAME}'/g;s/{{DB_PASSWORD}}/'${DB_PASSWORD}'/g;' kubefile.yaml | kubectl apply -f -
                     """
                 }
