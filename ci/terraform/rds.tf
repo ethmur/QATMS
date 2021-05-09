@@ -31,6 +31,7 @@ resource "aws_db_instance" "tms" {
   engine               = "mysql"
   identifier           = "tmsdb"
   instance_class       = "db.t3.micro"
+  name                 = "tms"
   username             = "rdsuser"
   password             = random_password.rds.result
   port                 = local.rds_port
