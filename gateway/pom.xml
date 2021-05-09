@@ -49,7 +49,7 @@
 	</dependencyManagement>
 
 	<build>
-		<finalName>tms_backend</finalName>
+		<finalName>tms_gateway</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
