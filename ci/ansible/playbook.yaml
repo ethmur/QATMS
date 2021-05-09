@@ -225,6 +225,7 @@
       loop:
         - docker-workflow
         - git
+        - github
         - maven-plugin
         - pipeline-maven
         - workflow-aggregator
