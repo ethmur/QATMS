@@ -9,7 +9,7 @@
       <options/>
     </org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction>
   </actions>
-  <description>Build &amp; Deploy the Backend</description>
+  <description>Build &amp; Deploy the Gateway</description>
   <keepDependencies>false</keepDependencies>
   <properties/>
   <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2.90">
@@ -21,18 +21,9 @@
                 git &apos;https://github.com/ethmur/QATMS&apos;
             }
         }
-        stage(&apos;Maven Test&apos;) {
-            steps {
-                dir(&apos;backend/&apos;) {
-                    withMaven {
-                        sh &apos;mvn clean test&apos;
-                    }
-                }
-            }
-        }
         stage(&apos;Maven Build&apos;) {
             steps {
-                dir(&apos;backend/&apos;) {
+                dir(&apos;gateway/&apos;) {
                     withMaven {
                         sh &apos;mvn clean package -Dmaven.test.skip=true&apos;
                     }
@@ -41,10 +32,10 @@
         }
         stage(&apos;Build Docker Image&apos;) {
             steps {
-                dir(&apos;backend/&apos;) {
+                dir(&apos;gateway/&apos;) {
                     withCredentials([usernamePassword(credentialsId: &apos;dockerhub&apos;, usernameVariable: &apos;username&apos;, passwordVariable: &apos;password&apos;)]) {
                         script {
-                            image = docker.build(&quot;ethmur/tms_backend&quot;)
+                            image = docker.build(&quot;ethmur/tms_gateway&quot;)
                         }
                     }
                 }
@@ -61,11 +52,11 @@
         }
         stage(&apos;Deploy Kubernetes Container&apos;) {
             steps {
-                dir(&apos;backend/&apos;) {
+                dir(&apos;gateway/&apos;) {
                     sh &quot;&quot;&quot;
                         set +x
-                        sed &apos;s/{{DB_ENDPOINT}}/&apos;${DB_ENDPOINT}&apos;/g;s/{{DB_USERNAME}}/&apos;${DB_USERNAME}&apos;/g;s/{{DB_PASSWORD}}/&apos;${DB_PASSWORD}&apos;/g;&apos; kubefile.yaml | kubectl delete -f - --ignore-not-found=true
-                        sed &apos;s/{{DB_ENDPOINT}}/&apos;${DB_ENDPOINT}&apos;/g;s/{{DB_USERNAME}}/&apos;${DB_USERNAME}&apos;/g;s/{{DB_PASSWORD}}/&apos;${DB_PASSWORD}&apos;/g;&apos; kubefile.yaml | kubectl apply -f -
+                        sed &apos;s!{{UI_BASE_URL}}!http://ui!g;s!{{BACKEND_BASE_URL}}!http://backend!g;&apos; kubefile.yaml | kubectl delete -f - --ignore-not-found=true
+                        sed &apos;s!{{UI_BASE_URL}}!http://ui!g;s!{{BACKEND_BASE_URL}}!http://backend!g;&apos; kubefile.yaml | kubectl apply -f -
                     &quot;&quot;&quot;
                 }
             }
