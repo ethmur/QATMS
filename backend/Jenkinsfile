@@ -3,7 +3,7 @@ pipeline{
     stages{
         stage('Clone Git Repository') {
             steps {
-                scm checkout
+                checkout scm
             }
         }
         stage('Maven Test') {
