@@ -1,0 +1,66 @@
+pipeline{
+    agent any
+    stages{
+        stage('Clone Git Repository') {
+            steps {
+                scm checkout
+            }
+        }
+        stage('Maven Test') {
+            steps {
+                dir('backend/') {
+                    withMaven {
+                        sh 'mvn clean test'
+                    }
+                }
+            }
+        }
+        stage('Maven Build') {
+            steps {
+                dir('backend/') {
+                    withMaven {
+                        sh 'mvn clean package -Dmaven.test.skip=true'
+                    }
+                }
+            }
+        }
+        stage('Build Docker Image') {
+            steps {
+                dir('backend/') {
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'username', passwordVariable: 'password')]) {
+                        script {
+                            image = docker.build("${username}/tms_backend")
+                        }
+                    }
+                }
+            }
+        }
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    docker.withRegistry('https://registry.hub.docker.com', 'dockerhub') {
+                        image.push()
+                    }
+                }
+            }
+        }
+        stage('Deploy Kubernetes Container') {
+            steps {
+                dir('backend/') {
+                    sh """
+                        set +x
+                        sed 's/{{DB_ENDPOINT}}/'${DB_ENDPOINT}'/g;s/{{DB_USERNAME}}/'${DB_USERNAME}'/g;s/{{DB_PASSWORD}}/'${DB_PASSWORD}'/g;' kubefile.yaml | kubectl delete -f - 
+--ignore-not-found=true
+                        sed 's/{{DB_ENDPOINT}}/'${DB_ENDPOINT}'/g;s/{{DB_USERNAME}}/'${DB_USERNAME}'/g;s/{{DB_PASSWORD}}/'${DB_PASSWORD}'/g;' kubefile.yaml | kubectl apply -f -
+                    """
+                }
+            }
+        }
+        stage('Show Kubernetes Services') {
+            steps {
+                sh 'sleep 20'
+                sh 'kubectl get services'
+            }
+        }
+    }
+}
