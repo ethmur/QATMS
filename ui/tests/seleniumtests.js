@@ -1,7 +1,7 @@
 const {Builder, By, Key, until} = require('selenium-webdriver');
 const assert = require('assert');
 
-const URL = 'http://localhost:8081/tms/ui';
+const URL = 'http://abb9b75e719014327b1341f85ba6b049-1426411863.eu-west-1.elb.amazonaws.com/tms/ui/';
 
 function sleep(n) {
 	console.log('Sleeping ', n, 'ms');
@@ -25,7 +25,7 @@ function closeAlertDialog(driver) {
 		// Visit TMS site
 		console.log('Opening browser to TMS site at following URL: ', URL);
 		await driver.get(URL);
-		await sleep(1000);
+		await sleep(4000);
 
 		// Count tickets
 		console.log('Counting tickets');
@@ -39,19 +39,19 @@ function closeAlertDialog(driver) {
 		const newTicketAuthor = 'SELEN_AUTHOR';
 		console.log('Clicking Create Ticket button');
 		await (await driver.findElements(By.css('input[value="Create Ticket"]')))[0].click();
-		await sleep(1000);
+		await sleep(4000);
 		console.log('Filling in new ticket title:', newTicketTitle);
 		await driver.findElement(By.css('.new-ticket .ticket-title input')).sendKeys(newTicketTitle);
 		console.log('Filling in new ticket description: ', newTicketDescription);
 		await driver.findElement(By.css('.new-ticket .ticket-description input')).sendKeys(newTicketDescription);
 		console.log('Filling in new ticket author: ', newTicketAuthor);
 		await driver.findElement(By.css('.new-ticket .ticket-author input')).sendKeys(newTicketAuthor);
-		await sleep(1000);
+		await sleep(4000);
 		console.log('Clicking Create button');
 		await (await driver.findElements(By.css('input[value="Create"]')))[0].click();
-		await sleep(500);
+		await sleep(4000);
 		await closeAlertDialog(driver);
-		await sleep(1000);
+		await sleep(4000);
 
 		// Count tickets
 		console.log('Counting tickets');
@@ -70,9 +70,9 @@ function closeAlertDialog(driver) {
 		// Delete newly created ticket
 		console.log('Deleting newly created ticket');
 		await (await driver.findElements(By.css('input[value="Delete"]')))[index].click();
-		await sleep(500);
+		await sleep(4000);
 		await closeAlertDialog(driver);
-		await sleep(1000);
+		await sleep(4000);
 
 		// Count tickets
 		console.log('Counting tickets');
