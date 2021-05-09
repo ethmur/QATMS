@@ -35,7 +35,7 @@
                 dir(&apos;gateway/&apos;) {
                     withCredentials([usernamePassword(credentialsId: &apos;dockerhub&apos;, usernameVariable: &apos;username&apos;, passwordVariable: &apos;password&apos;)]) {
                         script {
-                            image = docker.build(&quot;ethmur/tms_gateway&quot;)
+                            image = docker.build(&quot;${username}/tms_gateway&quot;)
                         }
                     }
                 }
@@ -59,6 +59,12 @@
                         sed &apos;s!{{UI_BASE_URL}}!http://ui!g;s!{{BACKEND_BASE_URL}}!http://backend!g;&apos; kubefile.yaml | kubectl apply -f -
                     &quot;&quot;&quot;
                 }
+            }
+        }
+        stage(&apos;Show Kubernetes Services&apos;) {
+            steps {
+                sh &apos;sleep 20&apos;
+                sh &apos;kubectl get services&apos;
             }
         }
     }
