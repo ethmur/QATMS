@@ -110,7 +110,7 @@ class TicketQueue extends React.Component {
         tickets = tickets || [];
         return (
             <div>
-                <h1>Tickets</h1>
+                <h1>All Tickets</h1>
                 <input type="button" value="Create Ticket" onClick={this.toggleCreatingTicket}></input>
                 <input type="button" value="Refresh" onClick={this.handleRefresh}></input>
                 { creatingTicket 
