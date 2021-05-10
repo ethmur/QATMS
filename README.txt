@@ -1,61 +1,90 @@
 QA TicketManagementSystem
+Author: Ethan Murad
 
-This software project allows for the basic management of tickets.
 
 JIRA board link: https://ethanbarcims.atlassian.net/browse/TMS
 JIRA invite link: https://id.atlassian.com/invite/p/jira-software?id=Rvolh4s8TiOafJ8wBd_lGw
 
-Components:
-	- Database (MySQL)
-	- Backend (Spring Boot)
-	- Frontend (ReactJS)
-	- Gateway Reverse Proxy (Spring Boot)
-	
-Software dependencies
-	- MySQL
-	- Java 8
-	- Maven
-	- nodeJS/npm
-	- Selenium Webdriver
-	- (Optional) Eclipse
-	- (Optional) Visual Studio Code
-	
-Local Environment Setup
-	- Database (MySQL)
-		1) Install MySQL
-		2) Create MySQL instance with following properties (if you change these properties, you will need to modify the backend application.properties config file accordingly):
-			Port: 3306
-			Username: root
-			Password: password
-		3) Execute SQL script at db/ticket.sql to initialize the database and tables
-	- Backend (Spring Boot)
-		1) Install Java 8, Maven
-		2) (Optional) Import the backend project into Eclipse.
-		3) To install maven dependencies: run command mvn clean package
-		4) To start the backend server: run main class backend/src/main/java/tms_backend/tms_backend/TmsBackendApplication.java
-		5) To run unit & integration tests: run command mvn test
-	- Frontend (ReactJS)
-		1) Install nodeJS/npm, Selenium Webdriver
-		2) (Optional) Import the ui project into Visual Studio Code
-		3) To install node module dependencies: run command npm install
-		4) To start the UI: run command npm run start
-		5) To run selenium UI tests: run command node ui/tests/seleniumtests.js
-	- Gateway Reverse Proxy (Spring Boot)
-		1) Install Java 8, Maven
-		2) (Optional) Import the gateway project into Eclipse.
-		3) To install maven dependencies: run command mvn clean package
-		4) To start the backend server: run main class gateway/src/main/java/tms_gateway/tms_gateway/TmsGatewayApplication.java
-		
-Interacting with the UI
-	- UI link (through gateway reverse proxy): http://localhost:8081/tms/ui
-	- Using the UI, you can do the following:
-		- View all tickets
-		- Create ticket
-		- Update ticket
-		- Delete ticket
-	- UI supports the following ticket properties:
+
+Application:
+	- This application allows for the basic management of tickets
+	- The following actions are supported: 
+		- Create
+		- Read
+		- Update
+		- Delete
+	- The following ticket properties are supported:
 		- Title
 		- Description
 		- Author
 		- Status
 		- Time Created
+	- Components:
+		- Database (MySQL)
+		- Backend (Spring Boot)
+		- Frontend (ReactJS)
+		- Gateway Reverse Proxy (Spring Boot)
+	
+	
+Deployment:
+	- Application is deployed onto AWS using a CI/CD pipeline
+	- Tools/services used
+		- git + GitHub
+		- terraform
+		- ansible
+		- jenkins
+		- docker + DockerHub
+		- kubernetes
+		- AWS
+			- VPC
+			- EC2
+			- EKS
+			- RDS
+	- Deployment steps:
+		1) Create an EC2 machine (ubuntu recommended) which will be used to deploy the application and infrastructure
+		2) SSH to the EC2 machine
+		On the EC2 machine:
+			3) Clone the repository
+				git clone https://github.com/ethmur/QATMS
+			4) Run shell script to install required dependencies on EC2 machine (note: this script only supports ubuntu)
+				./QATMS/ci/scripts/install_dependencies.sh
+			5) Configure AWS CLI credentials
+				aws configure
+			6) Run shell script to deploy & configure TicketManagementSystem infrastructure into AWS
+				./QATMS/ci/scripts/deploy.sh
+			7) Connect to Jenkins UI in browser
+		On the Jenkins UI:
+			8) Configure DockerHub credentials
+			9) Manually trigger following Jenkins jobs:
+				- backend
+				- frontend
+				- gateway
+		On GitHub:
+			10) Setup GitHub webhook to trigger Jenkins jobs automatically
+	- How to determine TicketManagementSystem UI URL:
+		- Retrieve load balancer public hostname from AWS console (there should be exactly 1 load balancer)
+		- TicketManagementSystem URL is http://[LOAD_BALANCER_URL]/tms/ui/        (important: the trailing forward slash is required)
+			
+
+Repository folder structure:
+	- backend/ folder
+		- source code for Spring Boot backend
+		- source code for backend tests (using, JUnit, H2, Mockito)
+		- backend deployment descriptor files
+	- ui/ folder
+		- source code for nodeJS UI
+		- source code for UI tests (using selenium)
+		- UI deployment descriptor files
+	- gateway/ folder
+		- source code for Spring Boot gateway reverse proxy service
+		- gateway deployment descriptor files
+	- db/ folder
+		- SQL script to initialize the MySQL database
+	- ci/ folder
+		- source code for CI/CD pipeline
+		- terraform IaC resources
+		- ansible playbook & inventory files
+		- utilitary shell scripts
+	- docs/ folder
+		- supplementary documentation/diagrams/videos to go with the project
+		- ER diagram
