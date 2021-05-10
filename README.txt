@@ -2,6 +2,9 @@ QA TicketManagementSystem
 Author: Ethan Murad
 
 
+Project video: https://drive.google.com/file/d/1tLoKsprHIagaAZqTC4ntJs2Q8nqqtauH/view?usp=sharing
+
+
 JIRA board link: https://ethanbarcims.atlassian.net/browse/TMS
 JIRA invite link: https://id.atlassian.com/invite/p/jira-software?id=Rvolh4s8TiOafJ8wBd_lGw
 
