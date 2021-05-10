@@ -72,7 +72,7 @@ Repository folder structure:
 		- source code for backend tests (using, JUnit, H2, Mockito)
 		- backend deployment descriptor files
 	- ui/ folder
-		- source code for nodeJS UI
+		- source code for reactJS UI
 		- source code for UI tests (using selenium)
 		- UI deployment descriptor files
 	- gateway/ folder
